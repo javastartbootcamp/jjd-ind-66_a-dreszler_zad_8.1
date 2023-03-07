@@ -1,4 +1,6 @@
-package pl.javastart.task;
+package pl.javastart.task.app;
+
+import pl.javastart.task.model.UniversityApp;
 
 public class Main {
 
