@@ -1,8 +1,8 @@
 package pl.javastart.task.model;
 
 public class UniversityApp {
-
-    private static final int NOT_FOUND = -1;
+    University university = new University();
+    private static final int NOT_ASSIGNED = 0;
 
     /**
      * Tworzy prowadzącego zajęcia.
@@ -15,11 +15,9 @@ public class UniversityApp {
      * @param lastName  - nazwisko prowadzącego
      */
     public void createLecturer(int id, String degree, String firstName, String lastName) {
-        Lecturer[] lecturers = University.lecturers;
-        int lecturerNumber = University.getLecturerNumber();
-
-        if (!University.lecturerWithFollowingIdExists(id)) {
-            lecturers[lecturerNumber] = new Lecturer(firstName, lastName, degree, id);
+        if (university.fetchLecturerOfId(id) == null) {
+            Lecturer lecturer = new Lecturer(firstName, lastName, degree, id);
+            university.addLecturer(lecturer);
         } else {
             lecturerAlreadyExistsPrompt(id);
         }
@@ -41,12 +39,8 @@ public class UniversityApp {
      * @param lecturerId - identyfikator prowadzącego. Musi zostać wcześniej utworzony za pomocą metody {@link #createLecturer(int, String, String, String)}
      */
     public void createGroup(String code, String name, int lecturerId) {
-        Group[] groups = University.groups;
-        int groupNumber = University.getGroupNumber();
-        Lecturer[] lecturers = University.lecturers;
-
-        if (!University.groupWithFollowingCodeExists(code)) {
-            checkIfLecturerExistsAndAssignHim(groups, groupNumber, lecturers, lecturerId, code, name);
+        if (university.fetchGroupOfCode(code) == null) {
+            checkIfLecturerExistsAndAddGroup(lecturerId, code, name);
         } else {
             groupAlreadyExistsPrompt(code);
         }
@@ -56,11 +50,11 @@ public class UniversityApp {
         System.out.println("Grupa " + code + " już istnieje");
     }
 
-    private void checkIfLecturerExistsAndAssignHim(Group[] groups, int groupNumber, Lecturer[] lecturers, int lecturerId,
-                                                   String code, String name) {
-        if (University.lecturerWithFollowingIdExists(lecturerId)) {
-            int lecturerIndex = University.fetchLecturerIndexOfId(lecturerId);
-            groups[groupNumber] = new Group(name, code, lecturers[lecturerIndex]);
+    private void checkIfLecturerExistsAndAddGroup(int lecturerId, String code, String name) {
+        Lecturer lecturer = university.fetchLecturerOfId(lecturerId);
+        if (lecturer != null) {
+            Group group = new Group(name, code, lecturer);
+            university.addGroup(group);
         } else {
             lecturerDoesntExistPrompt(lecturerId);
         }
@@ -81,29 +75,25 @@ public class UniversityApp {
      * @param lastName  - nazwisko studenta
      */
     public void addStudentToGroup(int index, String groupCode, String firstName, String lastName) {
-        Group[] groups = University.groups;
-        int groupIndex = University.fetchGroupIndexOfCode(groupCode);
-        if (University.groupWithFollowingCodeExists(groupCode)) {
-            checkIfStudentAlreadyAssignedAndAdd(groups, groupIndex, index, firstName, lastName, groupCode);
+        Group group = university.fetchGroupOfCode(groupCode);
+        if (group != null) {
+            Student student = new Student(firstName, lastName, index);
+            checkIfStudentAlreadyAssignedAndAdd(group, student);
         } else {
             groupDoesntExistPrompt(groupCode);
         }
     }
 
-    private void checkIfStudentAlreadyAssignedAndAdd(Group[] groups, int groupIndex, int studentIndex, String firstName,
-                                                     String lastName, String groupCode) {
-        if (!groups[groupIndex].studentWithFollowingIndexExists(studentIndex)) {
-            Student[] students = groups[groupIndex].getStudents();
-            int studentNumber = groups[groupIndex].getStudentNumber();
-            students[studentNumber] = new Student(firstName, lastName, studentIndex);
-            groups[groupIndex].addStudent();
+    private void checkIfStudentAlreadyAssignedAndAdd(Group group, Student student) {
+        if (group.fetchStudentOfIndex(student.getIndex()) == null) {
+            group.addStudent(student);
         } else {
-            studentAlreadyInGroupPrompt(studentIndex, groupCode);
+            studentAlreadyInGroupPrompt(student, group);
         }
     }
 
-    private void studentAlreadyInGroupPrompt(int studentIndex, String groupCode) {
-        System.out.println("Student o indeksie " + studentIndex + " jest już w grupie " + groupCode);
+    private void studentAlreadyInGroupPrompt(Student student, Group group) {
+        System.out.println("Student o indeksie " + student.getIndex() + " jest już w grupie " + group.getCode());
     }
 
     /**
@@ -121,9 +111,9 @@ public class UniversityApp {
      * @param groupCode - kod grupy, dla której wyświetlić informacje
      */
     public void printGroupInfo(String groupCode) {
-        if (University.groupWithFollowingCodeExists(groupCode)) {
-            int groupIndex = University.fetchGroupIndexOfCode(groupCode);
-            System.out.println(University.groups[groupIndex].getInfo());
+        Group group = university.fetchGroupOfCode(groupCode);
+        if (group != null) {
+            System.out.println(group.getInfo());
         } else {
             groupDoesntExistPrompt(groupCode);
         }
@@ -144,10 +134,9 @@ public class UniversityApp {
      * @param grade        - ocena
      */
     public void addGrade(int studentIndex, String groupCode, double grade) {
-        if (University.groupWithFollowingCodeExists(groupCode)) {
-            int groupIndex = University.fetchGroupIndexOfCode(groupCode);
-            Group group = University.groups[groupIndex];
-            checkIfGradeAlreadyAssignedAndAdd(group, studentIndex, grade, groupCode);
+        Group group = university.fetchGroupOfCode(groupCode);
+        if (group != null) {
+            checkIfGradeAlreadyAssignedAndAdd(group, studentIndex, grade);
         } else {
             groupDoesntExistPrompt(groupCode);
         }
@@ -157,23 +146,22 @@ public class UniversityApp {
         System.out.println("Student o indeksie " + studentIndex + " nie jest zapisany do grupy " + groupCode);
     }
 
-    private void checkIfGradeAlreadyAssignedAndAdd(Group group, int studentIndex, double grade, String groupCode) {
-        if (group.studentWithFollowingIndexExists(studentIndex)) {
-            int studentIndexInArray = group.fetchStudentIndexOfIndex(studentIndex);
-            Student student = group.getStudents()[studentIndexInArray];
-            if (!student.gradeForGroupExists(group)) {
-                student.setGrade(new Grade(grade, group));
+    private void checkIfGradeAlreadyAssignedAndAdd(Group group, int studentIndex, double grade) {
+        Student student = group.fetchStudentOfIndex(studentIndex);
+        if (student != null) {
+            if (student.getGrade() == NOT_ASSIGNED) {
+                student.setGrade(grade);
             } else {
-                gradeAlreadyAssignedToStudentForGroup(studentIndex, groupCode);
+                gradeAlreadyAssignedToStudentForGroup(student, group);
             }
         } else {
-            studentNotAssignedToGroupPrompt(studentIndex, groupCode);
+            studentNotAssignedToGroupPrompt(studentIndex, group.getCode());
         }
     }
 
-    private void gradeAlreadyAssignedToStudentForGroup(int studentIndex, String groupCode) {
-        System.out.println("Student o indeksie " + studentIndex + " ma już wystawioną ocenę dla grupy " +
-                groupCode);
+    private void gradeAlreadyAssignedToStudentForGroup(Student student, Group group) {
+        System.out.println("Student o indeksie " + student.getIndex() + " ma już wystawioną ocenę dla grupy " +
+                group.getCode());
     }
 
     private void groupDoesntExistPrompt(String groupCode) {
@@ -189,14 +177,11 @@ public class UniversityApp {
      * @param index - numer indesku studenta dla którego wyświetlić oceny
      */
     public void printGradesForStudent(int index) {
-        Group[] groups = University.groups;
-
-        for (int i = 0; i < University.getGroupNumber(); i++) {
-            int studentArrayIndex = groups[i].fetchStudentIndexOfIndex(index);
-            if (studentArrayIndex != NOT_FOUND) {
-                Student student = groups[i].getStudents()[studentArrayIndex];
-                Grade grade = student.getGrade();
-                System.out.println(grade.getGroup().getName() + ": " + grade.getGrade());
+        for (int i = 0; i < university.getGroupNumber(); i++) {
+            Group group = university.getGroups()[i];
+            Student student = group.fetchStudentOfIndex(index);
+            if (student != null) {
+                System.out.println(group.getName() + ": " + student.getGrade());
             }
         }
     }
@@ -211,20 +196,19 @@ public class UniversityApp {
      * @param groupCode - kod grupy, dla której wyświetlić oceny
      */
     public void printGradesForGroup(String groupCode) {
-        int groupIndex = University.fetchGroupIndexOfCode(groupCode);
-        if (groupIndex != NOT_FOUND) {
-            printGrades(groupIndex);
+        Group group = university.fetchGroupOfCode(groupCode);
+        if (group != null) {
+            printGrades(group);
         } else {
             groupDoesntExistPrompt(groupCode);
         }
     }
 
-    private void printGrades(int groupIndex) {
-        Group group = University.groups[groupIndex];
+    private void printGrades(Group group) {
         Student[] students = group.getStudents();
         for (int i = 0; i < group.getStudentNumber(); i++) {
             System.out.println(students[i].getIndex() + " " + students[i].getFirstName() + " " +
-                    students[i].getLastName() + ": " + students[i].getGrade().getGrade());
+                    students[i].getLastName() + ": " + students[i].getGrade());
         }
     }
 
@@ -254,8 +238,8 @@ public class UniversityApp {
     }
 
     private void fillArrayWithStudents(Student[] allStudentsArray) {
-        for (int i = 0; i < University.getGroupNumber(); i++) {
-            Group[] groups = University.groups;
+        for (int i = 0; i < university.getGroupNumber(); i++) {
+            Group[] groups = university.getGroups();
             Student[] students = groups[i].getStudents();
             for (int j = 0; j < groups[i].getStudentNumber(); j++) {
                 Student student = students[j];
@@ -267,9 +251,9 @@ public class UniversityApp {
     }
 
     private int sumOfStudentsInGroups() {
-        Group[] groups = University.groups;
+        Group[] groups = university.getGroups();
         int sum = 0;
-        for (int i = 0; i < University.getGroupNumber(); i++) {
+        for (int i = 0; i < university.getGroupNumber(); i++) {
             sum += groups[i].getStudentNumber();
         }
         return sum;

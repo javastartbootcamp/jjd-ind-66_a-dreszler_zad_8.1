@@ -1,63 +1,79 @@
 package pl.javastart.task.model;
 
-class University {
-    private static final int MAX_LECTURERS = 1000;
-    private static final int MAX_GROUPS = 1000;
-    private static final int NOT_FOUND = -1;
-    static Lecturer[] lecturers = new Lecturer[MAX_LECTURERS];
-    static Group[] groups = new Group[MAX_GROUPS];
-    private static int lecturerNumber = 0;
-    private static int groupNumber = 0;
+import java.util.Arrays;
 
-    static int getLecturerNumber() {
+class University {
+    private static final int INITIAL_LECTURERS = 10;
+    private static final int INITIAL_GROUPS = 10;
+    private Lecturer[] lecturers = new Lecturer[INITIAL_LECTURERS];
+    private Group[] groups = new Group[INITIAL_GROUPS];
+    private int lecturerNumber = 0;
+    private int groupNumber = 0;
+
+    int getLecturerNumber() {
         return lecturerNumber;
     }
 
-    static boolean lecturerWithFollowingIdExists(int id) {
+    Lecturer fetchLecturerOfId(int id) {
         for (int i = 0; i < lecturerNumber; i++) {
+            if (lecturers[i] == null) {
+                break;
+            }
             if (lecturers[i].getId() == id) {
-                return true;
+                return lecturers[i];
             }
         }
-        return false;
+        return null;
     }
 
-    static int fetchLecturerIndexOfId(int id) {
-        for (int i = 0; i < lecturerNumber; i++) {
-            if (lecturers[i].getId() == id) {
-                return i;
-            }
-        }
-        return NOT_FOUND;
-    }
+//    boolean groupWithFollowingCodeExists(String code) {
+//        for (int i = 0; i < groupNumber; i++) {
+//            if (groups[i].getCode() == code) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
-    static boolean groupWithFollowingCodeExists(String code) {
+    Group fetchGroupOfCode(String code) {
         for (int i = 0; i < groupNumber; i++) {
-            if (groups[i].getCode() == code) {
-                return true;
+            if (groups[i] == null) {
+                break;
+            }
+            if (groups[i].getCode().equals(code)) {
+                return groups[i];
             }
         }
-        return false;
+        return null;
     }
 
-    static int fetchGroupIndexOfCode(String code) {
-        for (int i = 0; i < groupNumber; i++) {
-            if (groups[i].getCode() == code) {
-                return i;
-            }
+    void addGroup(Group group) {
+        if (groupNumber >= groups.length) {
+            groups = Arrays.copyOf(groups, groups.length * 2);
         }
-        return NOT_FOUND;
+
+        groups[groupNumber] = group;
+        groupNumber++;
     }
 
-    static int getGroupNumber() {
+    int getGroupNumber() {
         return groupNumber;
     }
 
-    static void addLecturer() {
+    void addLecturer(Lecturer lecturer) {
+        if (lecturerNumber >= lecturers.length) {
+            lecturers = Arrays.copyOf(lecturers, lecturers.length * 2);
+        }
+
+        lecturers[lecturerNumber] = lecturer;
         lecturerNumber++;
     }
 
-    static void addGroup() {
-        groupNumber++;
+    Lecturer[] getLecturers() {
+        return lecturers;
+    }
+
+    Group[] getGroups() {
+        return groups;
     }
 }

@@ -8,7 +8,6 @@ class Lecturer extends Person {
         super(firstName, lastName);
         this.id = id;
         this.degree = degree;
-        University.addLecturer();
     }
 
     int getId() {

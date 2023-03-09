@@ -1,46 +1,57 @@
 package pl.javastart.task.model;
 
+import java.util.Arrays;
+
 class Group {
-    private static final int MAX_STUDENTS_IN_GROUP = 100;
-    private static final int NOT_FOUND = -1;
+    private static final int INITIAL_STUDENTS_IN_GROUP = 10;
     private String name;
     private String code;
     private Lecturer lecturer;
-    private Student[] students = new Student[MAX_STUDENTS_IN_GROUP];
+    private Student[] students = new Student[INITIAL_STUDENTS_IN_GROUP];
     private int studentNumber = 0;
 
     Group(String name, String code, Lecturer lecturer) {
         this.name = name;
         this.code = code;
         this.lecturer = lecturer;
-        University.addGroup();
     }
 
-    void addStudent() {
+    void addStudent(Student student) {
+        if (studentNumber >= students.length) {
+            Arrays.copyOf(students, students.length * 2);
+        }
+
+        students[studentNumber] = student;
         studentNumber++;
     }
 
-    boolean studentWithFollowingIndexExists(int index) {
-        for (int i = 0; i < studentNumber; i++) {
-            if (students[i].getIndex() == index) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    boolean studentWithFollowingIndexExists(int index) {
+//        for (int i = 0; i < studentNumber; i++) {
+//            if (students[i].getIndex() == index) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
-    int fetchStudentIndexOfIndex(int index) {
+    Student fetchStudentOfIndex(int index) {
         for (int i = 0; i < studentNumber; i++) {
+            if (students[i] == null) {
+                break;
+            }
             if (students[i].getIndex() == index) {
-                return i;
+                return students[i];
             }
         }
-        return NOT_FOUND;
+        return null;
     }
 
     String getInfo() {
         String studentsInGroup = "";
         for (int i = 0; i < studentNumber; i++) {
+            if (students[i] == null) {
+                break;
+            }
             studentsInGroup += students[i].getIndex() + " " + students[i].getFirstName() + " " +
                     students[i].getLastName() + "\n";
         }
