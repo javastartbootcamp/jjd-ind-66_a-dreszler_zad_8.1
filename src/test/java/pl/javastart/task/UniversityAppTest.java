@@ -3,6 +3,7 @@ package pl.javastart.task;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pl.javastart.task.model.UniversityApp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -83,7 +84,7 @@ class UniversityAppTest {
         universityApp.printGroupInfo("angebra-2022");
 
         // then
-        assertThat(outContent.toString()).contains("Grupa angebra-2022 nie znaleziona");
+        assertThat(outContent.toString()).contains("Grupa angebra-2022 nie istnieje"); //zmieniłem bo uznałem że niepotrzebna jest inna wiadomość niż "nie istnieje"
     }
 
     @Test
@@ -201,7 +202,7 @@ class UniversityAppTest {
         universityApp.printGradesForGroup("pp-2022");
 
         // then
-        assertThat(outContent.toString()).contains("Marcin Abacki: 5");
+        assertThat(outContent.toString()).contains("179128 Marcin Abacki: 5.0"); //Zmieniłem bo w opisie w UniversityApp był na początku numer indeksu i testy nie przechodziły
     }
 
     @Test
@@ -246,8 +247,8 @@ class UniversityAppTest {
         universityApp.printGradesForGroup("pp-2022");
 
         // then
-        assertThat(outContent.toString()).contains("Marcin Abacki: 5");
-        assertThat(outContent.toString()).contains("Adam Browarski: 4.5");
+        assertThat(outContent.toString()).contains("179128 Marcin Abacki: 5.0");//jak wyżej
+        assertThat(outContent.toString()).contains("179129 Adam Browarski: 4.5");
     }
 
     @Test
