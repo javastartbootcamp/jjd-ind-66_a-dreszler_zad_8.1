@@ -17,4 +17,8 @@ class Lecturer extends Person {
     String getDegree() {
         return degree;
     }
+
+    String getInfo() {
+        return degree + " " + getFirstName() + " " + getLastName();
+    }
 }

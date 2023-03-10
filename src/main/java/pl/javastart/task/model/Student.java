@@ -20,4 +20,12 @@ class Student extends Person {
     void setGrade(double grade) {
         this.grade = grade;
     }
+
+    String getInfo() {
+        return index + " " + getFirstName() + " " + getLastName() + "\n";
+    }
+
+    void printInfo() {
+        System.out.println(getInfo());
+    }
 }

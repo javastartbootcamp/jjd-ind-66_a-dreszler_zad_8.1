@@ -18,7 +18,7 @@ class Group {
 
     void addStudent(Student student) {
         if (studentNumber >= students.length) {
-            Arrays.copyOf(students, students.length * 2);
+            students = Arrays.copyOf(students, students.length * 2);
         }
 
         students[studentNumber] = student;
@@ -52,11 +52,10 @@ class Group {
             if (students[i] == null) {
                 break;
             }
-            studentsInGroup += students[i].getIndex() + " " + students[i].getFirstName() + " " +
-                    students[i].getLastName() + "\n";
+            studentsInGroup += students[i].getInfo();
         }
-        return "Kod: " + code + "\nNazwa: " + name + "\nProwadzący: " + lecturer.getDegree() + " " +
-                lecturer.getFirstName() + " " + lecturer.getLastName() + "\nUczestnicy:\n" + studentsInGroup;
+        return "Kod: " + code + "\nNazwa: " + name + "\nProwadzący: " + lecturer.getInfo() + "\nUczestnicy:\n" +
+                studentsInGroup;
     }
 
     int getStudentNumber() {

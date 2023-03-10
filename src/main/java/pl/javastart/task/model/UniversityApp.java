@@ -232,8 +232,7 @@ public class UniversityApp {
 
     private void printStudentArray(Student[] allStudentsArray) {
         for (Student student : allStudentsArray) {
-            System.out.println(student.getIndex() + " " + student.getFirstName() + " " +
-                    student.getLastName());
+            student.printInfo();
         }
     }
 
